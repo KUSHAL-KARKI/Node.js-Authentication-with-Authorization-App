@@ -3,10 +3,12 @@ import { configDotenv } from "dotenv";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRoutes from "./routes/authRoute.js";
+import adminRoutes from "./routes/adminRoute.js";
+import cookieParser from "cookie-parser";
+
 
 configDotenv();
 const app = express();
-
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
@@ -17,7 +19,7 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 // connecting to mongo db database
 const dburi = process.env.DB_URI;
 mongoose
@@ -29,3 +31,4 @@ mongoose
 
   // routes
   app.use(authRoutes);
+  app.use(adminRoutes);

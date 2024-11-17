@@ -14,11 +14,12 @@ router.get("/signup", (req, res) => {
   res.render("signup");
 });
 router.post("/signup", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
   try {
     const user = new User({
       username,
       password,
+      role: role || "user",
     });
     await user.save();
     res.redirect("/login");
@@ -43,15 +44,23 @@ router.post("/login", async (req, res) => {
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
+    console.log("validPassword", validPassword);
     if (!validPassword) {
       return res
         .status(400)
         .render("login", { error: "Username or password not matched" });
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
     res.cookie("token", token, { httpOnly: true });
+    if (user.role === "admin") {
+      return res.redirect("/admin");
+    }
     res.render("home", { user: username });
   } catch (error) {
     console.log(error);
